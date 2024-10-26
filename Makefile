@@ -1,35 +1,26 @@
+queue:
+	docker-compose exec php-cli php yii queue/listen
 up:
 	docker-compose up -d
 	docker-compose exec php-fpm composer install
-	docker-compose exec php-fpm php artisan migrate --step
-check:
-	docker-compose exec php-fpm vendor/bin/rector process
-	docker-compose exec php-fpm vendor/bin/phpstan analyse --memory-limit=2G --debug
+	docker-compose exec php-fpm php yii migrate
+	docker-compose up -d php-cli
+cache:
+	docker-compose exec php-fpm php yii cache/flush-all
 migrate:
-	docker-compose exec php-fpm php artisan migrate --step
+	docker-compose exec php-fpm php yii migrate
 composer:
 	docker-compose exec php-fpm composer update
 rollback:
-	docker-compose exec php-fpm php artisan migrate:rollback
+	docker-compose exec php-fpm php yii migrate/down
 logs:
 	docker-compose logs -f
 stop:
 	docker-compose stop
 refresh:
-	docker-compose down
+	docker-compose down --volumes --remove-orphans
+	make up
+build:
+	docker-compose down --volumes --remove-orphans
 	docker-compose build --no-cache
 	make up
-clear:
-	docker-compose exec php-fpm composer dumpautoload
-	docker-compose exec php-fpm php artisan route:clear
-	docker-compose exec php-fpm php artisan config:clear
-	docker-compose exec php-fpm php artisan cache:clear
-	docker-compose exec php-fpm php artisan view:clear
-	docker-compose exec php-fpm php artisan config:cache
-seed:
-	docker-compose exec php-fpm php artisan db:seed
-build:
-	docker-compose -f docker-compose.build.yml build
-push:
-	docker-compose -f docker-compose.build.yml push
-build_and_push: build push
